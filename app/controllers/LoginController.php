@@ -1,7 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../models/UsuarioModel.php';
-require_once __DIR__ . '/../helpers/view.php';
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Models\UsuarioModel;
 
 class LoginController
 {
@@ -46,6 +49,7 @@ class LoginController
         $this->verificarSesion();
         render('mis_datos', ['usuario' => $_SESSION['usuario']]);
     }
+
 
     public function logout()
     {

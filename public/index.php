@@ -1,23 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
+// 1) Autoload de Composer y dotenv
+require __DIR__ . '/../vendor/autoload.php';
+
+$rootDir = realpath(__DIR__ . '/../');
+if ($rootDir === false) {
+    die('Error al resolver la ruta raíz del proyecto');
+}
+
+Dotenv\Dotenv::createImmutable($rootDir)->load();
+
+// 2) Arrancar sesión
 session_start();
 
-// Cargar controlador de login
-require_once __DIR__ . '/../app/controllers/LoginController.php';
+// 3) Importar controladores (PSR-4)
+use App\Controllers\LoginController;
+use App\Controllers\ConfiguracionController;
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+// 4) Instanciar controlador de login
+$loginController = new LoginController();
+
+// 5) Despachar rutas
+$uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
-
-$controller = new LoginController();
 
 switch ($uri) {
     case '/':
-        $controller->index();
+        if (isset($_SESSION['usuario'])) {
+            header('Location: /dashboard');
+            exit;
+        }
+        $loginController->index();
         break;
 
     case '/login':
         if ($method === 'POST') {
-            $controller->auth();
+            $loginController->auth();
         } else {
             header('Location: /');
         }
@@ -25,29 +45,45 @@ switch ($uri) {
 
     case '/dashboard':
         if (isset($_SESSION['usuario'])) {
-            $controller->dashboard();
+            $loginController->dashboard();
         } else {
             header('Location: /');
         }
         break;
+
     case '/configuracion':
-        require_once __DIR__ . '/../app/controllers/ConfiguracionController.php';
+        $configController = new ConfiguracionController();
+        if ($method === 'POST') {
+            $configController->updateClaveFiscal();
+        } else {
+            $configController->index();
+        }
+        break;
+
+    case '/configuracion/certificado':
+        $configController = new ConfiguracionController();
+        if ($method === 'POST') {
+            $configController->updateCertificado();
+        } else {
+            header('Location: /configuracion');
+        }
+        break;
+
+    case '/configuracion/crear-db':
         $ctrl = new ConfiguracionController();
-        $ctrl->index();
+        $ctrl->crearBaseDatos();
         break;
 
     case '/logout':
-        $controller->logout();
+        $loginController->logout();
         break;
+
     case '/mis-datos':
-        if (isset($_SESSION['usuario'])) {
-            require_once __DIR__ . '/../app/views/mis_datos.php';
-        } else {
-            header('Location: /');
-        }
+        $loginController->misDatos();
         break;
 
     default:
         http_response_code(404);
-        echo "Página no encontrada.";
+        echo 'Página no encontrada.';
+        break;
 }

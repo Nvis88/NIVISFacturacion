@@ -1,0 +1,23 @@
+{
+    "name": "nvis88/nvfacturando",
+    "description": "Sistema de facturación para NV",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1",
+        "vlucas/phpdotenv": "^5.5",
+        "ext-pdo": "*",
+        "ext-openssl": "*"
+    },
+    "require-dev": {
+        "robmorgan/phinx": "^0.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "scripts": {
+        "phinx": "phinx"
+    }
+}

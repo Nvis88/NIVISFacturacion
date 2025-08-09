@@ -1,7 +1,7 @@
 <?php
 $usuario = $_SESSION['usuario'] ?? null;
 
-ob_start(); // Inicia el buffer
+// ob_start(); // Inicia el buffer
 ?>
 
 <h3 class="mb-1">
@@ -48,4 +48,4 @@ ob_start(); // Inicia el buffer
 </div>
 
 <?php
-$contenido = ob_get_clean(); // ⚠️ NO INCLUIR layout_base.php manualmente
+// $contenido = ob_get_clean(); // ⚠️ NO INCLUIR layout_base.php manualmente

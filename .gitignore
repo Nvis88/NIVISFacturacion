@@ -1,0 +1,10 @@
+.env
+vendor/
+# Ignore environment files
+.env.local
+# Ignore IDE specific files
+.idea/
+# Ignore log files
+*.log
+# Ignore cache files
+cache/
