@@ -6,59 +6,54 @@ namespace App\Controllers;
 
 use App\Models\UsuarioModel;
 
-class LoginController
+final class LoginController
 {
-    public function index()
+    public function index(): void
     {
-        // Vista sin layout (formulario login)
-        require_once __DIR__ . '/../views/login.php';
+        // Vista simple de login (ajustá la ruta si tu archivo está en otra carpeta)
+        require __DIR__ . '/../views/login.php';
     }
 
-    public function auth()
+    public function auth(): void
     {
-        $cuit  = $_POST['cuit'] ?? '';
-        $clave = $_POST['clave'] ?? '';
+        $cuit  = trim($_POST['cuit']  ?? '');
+        $clave = trim($_POST['clave'] ?? '');
 
-        $modelo  = new UsuarioModel();
+        $modelo  = new UsuarioModel(); // PSR-4: App\Models\UsuarioModel
         $usuario = $modelo->verificarCredenciales($cuit, $clave);
 
         if ($usuario) {
             $_SESSION['usuario'] = $usuario;
             header('Location: /dashboard');
-        } else {
-            $_SESSION['error'] = 'CUIT o clave incorrectos';
-            header('Location: /');
-        }
-
-        exit;
-    }
-
-    public function dashboard()
-    {
-        if (!isset($_SESSION['usuario'])) {
-            header('Location: /');
             exit;
         }
 
-        render('dashboard', ['usuario' => $_SESSION['usuario']]);
+        $_SESSION['error'] = 'CUIT o clave incorrectos';
+        header('Location: /');
+        exit;
     }
 
-
-    public function misDatos()
+    public function dashboard(): void
     {
         $this->verificarSesion();
-        render('mis_datos', ['usuario' => $_SESSION['usuario']]);
+        // Vista simple de dashboard
+        require __DIR__ . '/../views/dashboard.php';
     }
 
+    public function misDatos(): void
+    {
+        $this->verificarSesion();
+        require __DIR__ . '/../views/mis_datos.php';
+    }
 
-    public function logout()
+    public function logout(): void
     {
         session_destroy();
         header('Location: /');
         exit;
     }
 
-    private function verificarSesion()
+    private function verificarSesion(): void
     {
         if (!isset($_SESSION['usuario'])) {
             header('Location: /');

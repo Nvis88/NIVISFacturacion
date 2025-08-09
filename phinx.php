@@ -45,5 +45,16 @@ return [
             'port'    => getenv('DB_PORT'),
             'charset' => getenv('DB_CHARSET'),
         ],
+        // phinx.php (agrega este bloque dentro de 'environments')
+        'tenant' => [
+            'adapter' => 'mysql',
+            'host'    => getenv('DB_HOST')     ?: '127.0.0.1',
+            'name'    => getenv('TENANT_DB')   ?: (getenv('DB_NAME') ?: 'nvfacturando'),
+            'user'    => getenv('DB_USER')     ?: 'root',
+            'pass'    => getenv('DB_PASSWORD') ?: '',
+            'port'    => getenv('DB_PORT')     ?: '3306',
+            'charset' => getenv('DB_CHARSET')  ?: 'utf8mb4',
+        ],
+
     ],
 ];

@@ -5,6 +5,12 @@ declare(strict_types=1);
 // 1) Autoload de Composer y dotenv
 require __DIR__ . '/../vendor/autoload.php';
 
+// public/index.php (o donde hagas el bootstrap)
+require_once __DIR__ . '/../app/models/Database.php';
+require_once __DIR__ . '/../app/core/BaseController.php';
+require_once __DIR__ . '/../app/models/ComprobanteModel.php';
+
+
 $rootDir = realpath(__DIR__ . '/../');
 if ($rootDir === false) {
     die('Error al resolver la ruta raíz del proyecto');
@@ -80,6 +86,34 @@ switch ($uri) {
 
     case '/mis-datos':
         $loginController->misDatos();
+        break;
+
+    case '/ventas/facturacion':
+        $ctrl = new ConfiguracionController(); // si tenés otro base, usalo
+        require_once __DIR__ . '/../app/controllers/FacturacionController.php';
+        $c = new FacturacionController();
+        $c->index(); // redirige a listado
+        break;
+
+    case '/ventas/facturacion/listado':
+        require_once __DIR__ . '/../app/controllers/FacturacionController.php';
+        (new FacturacionController())->listado();
+        break;
+
+    case '/ventas/facturacion/nueva':
+        require_once __DIR__ . '/../app/controllers/FacturacionController.php';
+        $c = new FacturacionController();
+        ($_SERVER['REQUEST_METHOD'] === 'POST') ? $c->crear() : $c->formNueva();
+        break;
+
+    case '/ventas/facturacion/detalle':
+        require_once __DIR__ . '/../app/controllers/FacturacionController.php';
+        (new FacturacionController())->detalle(); // ?id=...
+        break;
+
+    case '/ventas/facturacion/anular':
+        require_once __DIR__ . '/../app/controllers/FacturacionController.php';
+        (new FacturacionController())->anular(); // POST: id y motivo -> emite NC
         break;
 
     default:

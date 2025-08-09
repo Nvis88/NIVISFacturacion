@@ -5,35 +5,53 @@ declare(strict_types=1);
 namespace App\Models;
 
 use PDO;
+// Opcional, por claridad (están en el mismo namespace):
+use App\Models\Database;
 
-class UsuarioModel
+final class UsuarioModel
 {
-    private $db;
+    private PDO $pdo;
 
-    public function __construct()
+    public function __construct(?PDO $pdo = null)
     {
-        $this->db = Database::getConnection();
+        $this->pdo = $pdo ?? Database::getConnection();
     }
 
-    public function verificarCredenciales($cuit, $claveIngresada)
+    /**
+     * Devuelve los datos del usuario (array) si las credenciales son válidas,
+     * o null si no coinciden.
+     */
+    public function verificarCredenciales(string $cuit, string $claveIngresada): ?array
     {
-        $sql = "SELECT * FROM usuario WHERE CUIT = :cuit AND Estado = 'A' LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['cuit' => $cuit]);
-        $usuario = $stmt->fetch();
+        // Normalizamos CUIT a solo dígitos
+        $cuit = preg_replace('/\D+/', '', $cuit ?? '');
 
-        if ($usuario) {
-            // ✅ Verificar que sea un hash válido
-            if (!password_get_info($usuario['Clave'])['algo']) {
-                return false; // La clave almacenada no es un hash válido
-            }
+        $sql = "SELECT IdUsuario, Usuario, CUIT, Clave, Estado
+                  FROM usuario
+                 WHERE CUIT = :cuit AND Estado = 'A'
+                 LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':cuit' => $cuit]);
 
-            // ✅ Verificar si coincide con la ingresada
-            if (password_verify($claveIngresada, $usuario['Clave'])) {
-                return $usuario;
-            }
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$usuario) {
+            return null;
         }
 
-        return false;
+        // Verificamos que la columna Clave sea un hash válido y que coincida
+        $hashInfo = password_get_info($usuario['Clave'] ?? '');
+        if (empty($hashInfo['algo'])) {
+            // La clave guardada no es un hash -> tratamos como credencial inválida
+            return null;
+        }
+
+        if (!password_verify($claveIngresada, $usuario['Clave'])) {
+            return null;
+        }
+
+        // Por seguridad, no devolver el hash
+        unset($usuario['Clave']);
+
+        return $usuario;
     }
 }
